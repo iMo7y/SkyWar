@@ -13,9 +13,10 @@
     background: #4d79bc;
     max-width: 100%;
     max-height: 100%;
+    font-family: 'Bangers', cursive;
 }
 
 
-#layer1, #layer2, #player {
+#layer1, #layer2, #enemyjet, #ammo, #luckybird, #rocket, #motherofbombs, #bomb, #player {
     display: none;
 }
