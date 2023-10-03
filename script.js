@@ -2,9 +2,10 @@ window.addEventListener('load', function(){
 //canvas setup 
 const canvas = document.getElementById('canvas1');
 const ctx = canvas.getContext('2d');
-canvas.width = 800;
-canvas.height = 500;
+canvas.width = 874;
+canvas.height = 722;
 
+//Inputhandler setup
 class InputHandler {
     constructor(game){
         this.game = game;
@@ -28,20 +29,22 @@ class InputHandler {
         });
     }
 }
+
+// Projectile setup
 class Projectile {
     constructor(game, x, y, type) { 
         this.game = game;
         this.x = x;
         this.y = y;
         this.width = 60;
-        this.height = 20;
+        this.height = 18;
         this.speed = 9;
         this.markedForDeletion = false;
         if (type === 'rocket') {
             this.image = document.getElementById('rocket');
         } else {
             this.image = document.getElementById('ammo');
-            this.width = 30; this.height = 20;
+            this.width = 70; this.height = 15;
         }
     }
     update(){
@@ -52,6 +55,8 @@ class Projectile {
         context.drawImage(this.image, this.x, this.y, this.width, this.height);
     }
 }
+
+//pratical setuop
 class Praticle {
     constructor(game, x, y){
         this.game = game;
@@ -60,12 +65,16 @@ class Praticle {
         this.image = document.getElementById('')
     }
 }
+
+//player setup
 class Player {
     constructor(game){
         this.game = game;
         this.width = 200;
         this.height = 60;
         this.x = 20;
+        this.burners = [];
+        this.burnerOffsetY = 0;
         this.y = 100;
         this.speedY = 0;
         this.maxSpeed = 5;
@@ -74,6 +83,8 @@ class Player {
         this.powerUp = false;
         this.powerUpTimer = 0;
         this.powerUpLimit = 10000;
+        this.burnerAnimationSpeed = 1;
+        this.burnerDelay = 30;
     }
     update(deltaTime){
         if (this.game.keys.includes('ArrowUp')) this.speedY = -this.maxSpeed;
@@ -87,6 +98,12 @@ class Player {
         this.projectiles.forEach(projectile => {
         projectile.update();
         });
+        //burners 
+        for (let i = 1; i <=6; i++){
+            const burnersImage = document.getElementById('burner' + i)
+            this.burners.push(burnersImage);
+        }
+        this.burnerOffsetY += this.burnerAnimationSpeed * deltaTime;
         this.projectiles = this.projectiles.filter(projectile => !projectile.markedForDeletion);
         //power up 
         if (this.powerUp){
@@ -103,6 +120,13 @@ class Player {
         context.fillStyle = 'black';
         context.strokeRect(this.x, this.y, this.width, this.height);
         context.drawImage(this.image, this.x, this.y, this.width, this.height);
+        this.burners.forEach((burners, index) => {
+            const xOffset = this.width - 200; // Adjust the X position based on player width
+            const yOffset = this.height / 2 - 1; // Adjust the Y position based on player height
+            context.drawImage(burners, this.x + xOffset, this.y + yOffset + index * 10, 20, 10); // Adjust position and size as needed
+        });
+
+
         this.projectiles.forEach(projectile => {
             projectile.draw(context);
             });
@@ -130,6 +154,8 @@ class Player {
         if (this.game.ammo < this.game.maxAmmo) this.game.ammo = this.game.maxAmmo; 
     }
 }
+
+//enemy setup
 class Enemy {
      constructor(game){
         this.game = game;
@@ -155,7 +181,7 @@ class Enemy {
 class Enemyjet extends Enemy {
      constructor(game){
         super(game);
-        this.width = 180;
+        this.width = 200;
         this.height = 60;
         this.y = Math.random() * (this.game.height * 0.95 - this.height);
         this.image = document.getElementById('enemyjet');
@@ -177,42 +203,53 @@ class LuckyBird extends Enemy {
        
     }
 }
+
+//layers setup
 class Layer {
    constructor(game, image, speedModifier){
     this.game = game;
     this.image = image;
     this.speedModifier = speedModifier;
-    this.width = 1768;
-    this.height = 500;
-    this.x= 0;
+    this.width = this.game.width;
+    this.height = this.game.height;
+    this.x = 0;
     this.y = 0;
    }
    update(){
-    if(this.x <= - this.width) this.x = 0;
-     this.x -= this.game.speed * this.speedModifier;
+    if (this.x <= -this.width) this.x = 0;
+    this.x -= this.game.speed * this.speedModifier;
    }
    draw(context){
-    context.drawImage(this.image, this.x, this.y);
-    context.drawImage(this.image, this.x + this.width, this.y);
+    context.drawImage(this.image, this.x, this.y, this.width, this.height);
+    context.drawImage(this.image, this.x + this.width, this.y, this.width, this.height); 
    }
 }
+
+//background setup
 class Background {
     constructor(game){
         this.game = game;
         this.image1 = document.getElementById('layer1');
         this.image2 = document.getElementById('layer2');
-        this.layer1 = new Layer(this.game, this.image1, .5);
-        this.layer2 = new Layer(this.game, this.image2, 3);
-        this.layers = [this.layer1, this.layer2];
+        this.image3 = document.getElementById('layer3');
+        this.image4 = document.getElementById('layer4');
+        this.layer1 = new Layer(this.game, this.image1, 2.5);
+        this.layer2 = new Layer(this.game, this.image2, 2);
+        this.layer3 = new Layer(this.game, this.image3, 2);
+        this.layer4 = new Layer(this.game, this.image4, 3);
+        this.layers = [this.layer1, this.layer2, this.layer3, this.layer4];
     }
     update(){
         this.layers.forEach(layer => layer.update());
+        
     }
     draw(context){
         this.layers.forEach(layer => layer.draw(context));
 
     }
 }
+
+//ui setup
 class UI {
 constructor(game){
     this.game = game;
@@ -250,7 +287,7 @@ draw(context){
         context.fillText(message2, this.game.width * 0.5, this.game.height * 0.5 + 40);
 
     }
-    // ammo 
+    //ammo 
     if (this.game.player.powerUp) context.fillStyle = 'red';
     for (let i = 0; i < this.game.ammo; i++){
         context.fillRect(20 + 5* i, 50, 3, 20);
@@ -258,6 +295,8 @@ draw(context){
     context.restore();
   }
 }
+
+//game setup
 class Game {
    constructor(width, height){
     this.width = width;
@@ -286,7 +325,6 @@ class Game {
     if (!this.gameOver) this.gameTime += deltaTime;
     if (this.gameTime > this.timeLimit) this.gameOver = true;
     this.background.update()
-    this.background.layer1.update();
        this.player.update(deltaTime);
        if (this.ammoTimer > this.ammoInterval){
           if (this.ammo < this.maxAmmo) this.ammo++;

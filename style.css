@@ -17,6 +17,6 @@
 }
 
 
-#layer1, #layer2, #enemyjet, #ammo, #luckybird, #rocket, #motherofbombs, #bomb, #player {
+#layer1, #layer2, #layer3, #layer4, #enemyjet, #ammo, #luckybird, #rocket, #motherofbombs, #bomb, #player, #burner1, #burner2, #burner3, #burner4, #burner5, #burner6 {
     display: none;
 }
