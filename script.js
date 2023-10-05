@@ -29,6 +29,32 @@ window.addEventListener('load', function(){
             });
         }
     }
+    //Sounds setup
+    class SoundController {
+        constructor(){
+            this.powerUpSound = document.getElementById('powerup');
+            this.explosionSound = document.getElementById('explosion');
+            this.shotSound = document.getElementById('shot');
+            this.hitSound = document.getElementById('hit');
+            this.winningSound = document.getElementById('win');
+        }
+        powerUp(){
+            this.powerUpSound.currentTime = 0;
+            this.powerUpSound.play();
+        }
+        explosion(){
+            this.explosionSound.currentTime = 0;
+            this.explosionSound.play();
+        }
+        shot(){
+            this.shotSound.currentTime = 0;
+            this.shotSound.play();
+        }
+        hit(){
+            this.hitSound.currentTime = 0;
+            this.hitSound.play();
+        }
+    }
 
     // Projectile setup
     class Projectile {
@@ -38,13 +64,18 @@ window.addEventListener('load', function(){
             this.y = y;
             this.width = 60;
             this.height = 18;
-            this.speed = 9;
+            this.speed = [];
             this.markedForDeletion = false;
             if (type === 'rocket') {
                 this.image = document.getElementById('rocket');
+                this.damage = 5;
+                this.speed = 10;
             } else {
                 this.image = document.getElementById('ammo');
-                this.width = 70; this.height = 15;
+                this.width = 70; 
+                this.height = 15;
+                this.damage = 1;
+                this.speed = 5;
             }
         }
         update(){
@@ -55,17 +86,6 @@ window.addEventListener('load', function(){
             context.drawImage(this.image, this.x, this.y, this.width, this.height);
         }
     }
-
-    //practical setup
-    class Praticle {
-        constructor(game, x, y){
-            this.game = game;
-            this.x = x;
-            this.y = y;
-            this.image = document.getElementById('')
-        }
-    }
-
     //player setup
     class Player {
         constructor(game){
@@ -77,7 +97,7 @@ window.addEventListener('load', function(){
             this.burnerOffsetY = 0;
             this.y = 100;
             this.speedY = 0;
-            this.maxSpeed = 5;
+            this.maxSpeed = 6;
             this.projectiles = [];
             this.image = document.getElementById('player');
             this.powerUp = false;
@@ -141,6 +161,7 @@ window.addEventListener('load', function(){
                 this.projectiles.push(new Projectile(this.game, projectileX, projectileY, projectileType));
                 this.game.ammo--;
             }
+            this.game.sound.shot();
         }
         rocketShot() {
             if (this.powerUp && this.game.ammo > 0) {
@@ -153,7 +174,9 @@ window.addEventListener('load', function(){
         enterPowerUp(){
             this.powerUpTimer = 0;
             this.powerUp = true;
-            if (this.game.ammo < this.game.maxAmmo) this.game.ammo = this.game.maxAmmo; 
+            if (this.game.ammo < this.game.maxAmmo) this.game.ammo = 
+            this.game.maxAmmo; 
+            this.game.sound.powerUp();
         }
     }
 
@@ -187,7 +210,7 @@ window.addEventListener('load', function(){
             this.y = Math.random() * (this.game.height * 0.95 - this.height);
             this.image = document.getElementById('enemyjet');
             this.lives= 5;
-            this.score = 15;
+            this.score = 10;
             
          }
     }
@@ -211,8 +234,8 @@ window.addEventListener('load', function(){
            this.height = 30;
            this.y = Math.random() * (this.game.height * 0.95 - this.height);
            this.image = document.getElementById('luckybird');
-           this.lives = 2;
-           this.score = 10;
+           this.lives = 1;
+           this.score = 3;
            this.type = 'lucky';
         }
     }
@@ -366,6 +389,7 @@ class FireExplosion extends Explosion {
         this.player = new Player(this);
         this.input = new InputHandler(this);
         this.ui = new UI(this);
+        this.sound = new SoundController();
         this.keys = [];
         this.enemies =[]
         this.explosions = [];
@@ -401,6 +425,7 @@ class FireExplosion extends Explosion {
             if (this.checkCollision(this.player, enemy)){
                 enemy.markedForDeletion = true;
                 this.addExplosion(enemy);
+                this.sound.hit();
                 if (enemy.type === 'lucky') this.player.enterPowerUp();
                 else if (!this.gameOver) this.score--;
             }
@@ -408,8 +433,9 @@ class FireExplosion extends Explosion {
                 if (this.checkCollision(projectile, enemy)){
                     enemy.lives--;
                     projectile.markedForDeletion = true;
-                    if (enemy.lives <= 0){
+                    if (enemy.lives <= projectile.damage){
                         enemy.markedForDeletion = true;
+                        this.sound.explosion();
                         this.addExplosion(enemy);
                        if(!this.gameOver) this.score+= enemy.score;
                         /*if (this.score > this.winningScore) this.gameOver = true;*/
@@ -436,12 +462,17 @@ class FireExplosion extends Explosion {
             explosion.draw(context);
            });
        } 
-       addEnemy(){
-        const randomize = Math.random();
-        if (randomize < 0.6) this.enemies.push(new Enemyjet(this));
-        else if (randomize < 0.6) this.enemies.push(new Helicopter(this));
-        else this.enemies.push(new LuckyBird(this));
-       }
+       addEnemy() {
+        const randomize = Math.random(); // Generates a random number between 0 and 1
+        
+        if (randomize < 0.6) {
+          this.enemies.push(new Enemyjet(this));
+          this.enemies.push(new Helicopter(this));
+        } else {
+          this.enemies.push(new LuckyBird(this));
+        }
+      }
+    
        addExplosion(enemy){
         const randomize = Math.random();
         if (randomize < 0.5) {
