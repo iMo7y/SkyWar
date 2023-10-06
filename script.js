@@ -10,7 +10,8 @@ window.addEventListener('load', function(){
         constructor(game){
             this.game = game;
             window.addEventListener('keydown', e => {
-                if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && this.game.keys.indexOf(e.key) === -1){
+                if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && 
+                    this.game.keys.indexOf(e.key) === -1){
                     this.game.keys.push(e.key);
                 } else if (e.key === ' ') {
                     if (this.game.player.powerUp) {
@@ -24,7 +25,8 @@ window.addEventListener('load', function(){
             });
             window.addEventListener('keyup', e => {
                 if(this.game.keys.indexOf(e.key) > -1){
-                    this.game.keys.splice(this.game.keys.indexOf(e.key), 1);
+                    this.game.keys.splice(
+                    this.game.keys.indexOf(e.key), 1);
                 }
             });
         }
@@ -54,9 +56,13 @@ window.addEventListener('load', function(){
             this.hitSound.currentTime = 0;
             this.hitSound.play();
         }
+        win(){
+            this.winningSound.currentTime = 0;
+            this.winningSound.play();
+        }
     }
 
-    // Projectile setup
+    // projectile setup
     class Projectile {
         constructor(game, x, y, type) { 
             this.game = game;
@@ -140,14 +146,11 @@ window.addEventListener('load', function(){
         }
         draw(context){
             context.drawImage(this.image, this.x, this.y, this.width, this.height);
-
-            // Draw only one burner based on the current position
             const burnerIndex = Math.floor(this.burnerOffsetY) % this.burners.length;
             const burner = this.burners[burnerIndex];
-
-            const xOffset = this.width - 220; // Adjust the X position based on player width
-            const yOffset = this.height / 3 - 1; // Adjust the Y position based on player height
-            context.drawImage(burner, this.x + xOffset, this.y + yOffset, 40, 30); // Adjust position and size as needed
+            const xOffset = this.width - 220; 
+            const yOffset = this.height / 3 - 1; 
+            context.drawImage(burner, this.x + xOffset, this.y + yOffset, 40, 30); 
 
             this.projectiles.forEach(projectile => {
                 projectile.draw(context);
@@ -361,9 +364,11 @@ class FireExplosion extends Explosion {
             if (this.game.score > this.game.winningScore){
                 message1 = 'Mission Accomplished!';
                 message2 = 'Congratulations, Pilot! You conquered the skies!';
+                document.getElementById('win').play();
             } else {
                 message1 = 'Defeat in the Skies!';
                 message2 = 'Redemption takes flight!';
+                document.getElementById('lose').play();
             }
             context.font = '90px ' + this.fontFamily;
             context.fillText(message1, this.game.width * 0.5, this.game.height * 0.5 - 30);
@@ -401,9 +406,9 @@ class FireExplosion extends Explosion {
         this.ammoInterval = 350;
         this.gameOver = false;
         this.score = 0;
-        this.winningScore = 150;
+        this.winningScore = 15;
         this.gameTime = 0;
-        this.timeLimit = 60000;
+        this.timeLimit = 10000;
         this.speed = 1.5;
         this.debug = false;
        }
@@ -438,7 +443,6 @@ class FireExplosion extends Explosion {
                         this.sound.explosion();
                         this.addExplosion(enemy);
                        if(!this.gameOver) this.score+= enemy.score;
-                        /*if (this.score > this.winningScore) this.gameOver = true;*/
                     }
                 }
             })
@@ -463,7 +467,7 @@ class FireExplosion extends Explosion {
            });
        } 
        addEnemy() {
-        const randomize = Math.random(); // Generates a random number between 0 and 1
+        const randomize = Math.random();
         
         if (randomize < 0.6) {
           this.enemies.push(new Enemyjet(this));
