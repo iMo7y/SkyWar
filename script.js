@@ -406,9 +406,9 @@ class FireExplosion extends Explosion {
         this.ammoInterval = 350;
         this.gameOver = false;
         this.score = 0;
-        this.winningScore = 15;
+        this.winningScore = 200;
         this.gameTime = 0;
-        this.timeLimit = 10000;
+        this.timeLimit = 60000;
         this.speed = 1.5;
         this.debug = false;
        }
